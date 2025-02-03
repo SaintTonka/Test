@@ -16,13 +16,13 @@
 
 5) Запустите сервер uvicorn app.main:app --reload
 
-6) Для проверки работы API можете перейти по ссылке http://localhost:8000/docs, откроется SWAGGER
+6) Для проверки работы API после INFO:Application startup complete можете перейти по ссылке http://localhost:8000/docs, откроется SWAGGER
 
 # WIth Docker
 
 1) docker-compose up --build
 
-2) Также можете перейти по ссылке http://localhost:8000/docs
+2) После INFO:Application startup complete также можете перейти по ссылке http://localhost:8000/docs
 
 # SWAGGER
 
