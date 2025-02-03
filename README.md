@@ -24,7 +24,7 @@
 
 2) Также можете перейти по ссылке http://localhost:8000/docs
 
-#SWAGGER
+# SWAGGER
 
 1) Авторизация:
 Admin:
