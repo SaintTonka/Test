@@ -1,28 +1,45 @@
-import hashlib
-from sqlalchemy.orm import Session
+import hashlib,logging
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Account, Payment
 from fastapi import HTTPException
 from app.config import SECRET_KEY
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def generate_signature(data: dict) -> str:
-    keys = sorted(data.keys())
-    raw_string = ''.join(f"{key}{data[key]}" for key in keys)
-    raw_string += SECRET_KEY
-    return hashlib.sha256(raw_string.encode('utf-8')).hexdigest()
+    required_fields = ["transaction_id", "account_id", "user_id", "amount"]
+    sorted_data = {k: data[k] for k in sorted(required_fields)}
+    raw_string = ''.join(f"{k}{v}" for k, v in sorted_data.items()) + SECRET_KEY
+    return hashlib.sha256(raw_string.encode()).hexdigest()
 
-def process_payment(data: dict, db: Session):
+async def process_payment(data: dict, db: AsyncSession):
     signature = data.pop("signature")
-    if generate_signature(data) != signature:
+    logger.info(f"Received signature: {signature}")
+    
+    generated_signature = generate_signature(data)
+    logger.info(f"Generated signature: {generated_signature}")
+    
+    if generated_signature != signature:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    account = db.query(Account).filter(Account.id == data["account_id"]).first()
-    if not account:
-        account = Account(id=data["account_id"], user_id=data["user_id"])
-        db.add(account)
+    result = await db.execute(
+        select(Account).where(Account.id == data["account_id"])
+    )
+    account = result.scalar_one_or_none()
 
-    existing_payment = db.query(Payment).filter(Payment.transaction_id == data["transaction_id"]).first()
-    if existing_payment:
+    if not account:
+        account = Account(user_id=data["user_id"]) 
+        db.add(account)
+        await db.flush()  
+
+    result = await db.execute(
+    select(Payment).where(Payment.transaction_id == data["transaction_id"])
+    )
+    if result.scalar_one_or_none():
+        logger.warning(f"Transaction {data['transaction_id']} already processed")
         raise HTTPException(status_code=400, detail="Transaction already processed")
+
 
     payment = Payment(
         transaction_id=data["transaction_id"],
@@ -32,4 +49,9 @@ def process_payment(data: dict, db: Session):
     )
     account.balance += data["amount"]
     db.add(payment)
-    db.commit()
+
+    try:
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")

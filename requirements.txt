@@ -2,5 +2,10 @@ fastapi
 uvicorn
 sqlalchemy
 psycopg2
-passlib[bcrypt]
+pydantic[email]
 python-multipart
+python-jose
+asyncpg>=0.25.0
+bcrypt>=4.0.1
+passlib>=1.7.4
+alembic
