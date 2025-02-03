@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, field_validator
 from decimal import *
 import re
+import uuid
 
 class UserAdminCreate(BaseModel):
     email: EmailStr
@@ -25,8 +26,12 @@ class UserAdminUpdate(BaseModel):
         return value
 
 class PaymentCreate(BaseModel):
-    transaction_id: str
+    transaction_id: str  
     amount: Decimal
     account_id: int
     user_id: int
     signature: str
+
+    @classmethod
+    def generate_transaction_id(cls) -> str:
+        return str(uuid.uuid4())
