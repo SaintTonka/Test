@@ -40,7 +40,6 @@ async def process_payment(data: dict, db: AsyncSession):
         logger.warning(f"Transaction {data['transaction_id']} already processed")
         raise HTTPException(status_code=400, detail="Transaction already processed")
 
-
     payment = Payment(
         transaction_id=data["transaction_id"],
         amount=data["amount"],
