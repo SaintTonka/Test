@@ -1,10 +1,11 @@
 # INSRTUCTION
 
-#Non Docker
+# Non Docker
 
 1) python -m venv venv
 - source venv/bin/activate  # Для Linux/Mac
 - venv\Scripts\activate # Для Windows
+
 Сам я использую conda
 
 2) pip install -r requirements.txt
