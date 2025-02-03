@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 111
       POSTGRES_DB: app_db
     ports:
       - "5432:5432"
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d app_db"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_db"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -20,7 +20,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://user:password@db:5432/app_db
+      DATABASE_URL: postgresql+asyncpg://postgres:111@localhost:5432/app_db
+      DB_HOST: db  
     depends_on:
       db:
         condition: service_healthy
